@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.22.0-alpine3.19 AS build
+FROM golang:latest AS build
 
 # Set the working directory inside the container
 WORKDIR /go/src/app
@@ -14,7 +14,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
 # Final stage
-FROM alpine:3.19
+FROM alpine:3.14@sha256:eb3e4e175ba6d212ba1d6e04fc0782916c08e1c9d7b45892e9796141b1d379ae
 
 # Set the working directory inside the container
 WORKDIR /root/
@@ -26,4 +26,4 @@ COPY --from=build /go/src/app/main .
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["./main"]a
+CMD ["./main"]
