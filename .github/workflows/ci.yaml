@@ -21,6 +21,56 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+          cache: false
+
+      ## Unit testing
+      - name: Run Unit Tests
+        run: |
+            go test ./...
+
+      ## Linting and validation
+      - name: Run Audit
+        run: |
+            go vet ./...
+            go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
+            govulncheck ./...
+            go mod verify
+            go test -race -vet=off  -cover ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3.4.0
+
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+      ## Detect secrets in code
+
+      - name: detect secrets
+        uses: edplato/trufflehog-actions-scan@v0.9l-beta
+
+      ## Code scanning
+
+      - name: SonarQube Scan
+        uses: kitabisa/sonarqube-action@v1.2.0
+        with:
+            host: ${{ secrets.SONARQUBE_HOST }}
+            login: ${{ secrets.SONARQUBE_TOKEN }}
+
+      ### Container building and scanning
+
+      - uses: actions/checkout@v2 
+      - name: Hadolint Action
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

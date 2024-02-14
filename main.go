@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, r *http.Request) {
+func Hello(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{"message": "world"}
@@ -13,6 +13,6 @@ func hello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/hello", Hello)
 	http.ListenAndServe(":9090", nil)
 }
