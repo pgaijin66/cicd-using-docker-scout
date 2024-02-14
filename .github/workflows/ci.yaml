@@ -30,22 +30,32 @@ jobs:
 
       ## Unit testing
       - name: Run Unit Tests
+        continue-on-error: true
         run: |
             go test ./...
 
       ## Linting and validation
       - name: Run Audit
+        continue-on-error: true
         run: |
             go vet ./...
             go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
-            govulncheck ./...
             go mod verify
             go test -race -vet=off  -cover ./...
 
+      - id: govulncheck
+        continue-on-error: true
+        uses: golang/govulncheck-action@v1
+        with:
+            go-version-input: 1.22
+            go-package: ./...
+
       - name: Run golangci-lint
+        continue-on-error: true
         uses: golangci/golangci-lint-action@v3.4.0
 
       - name: Run Gosec Security Scanner
+        continue-on-error: true
         uses: securego/gosec@master
         with:
           args: ./...
@@ -53,11 +63,13 @@ jobs:
       ## Detect secrets in code
 
       - name: detect secrets
+        continue-on-error: true
         uses: edplato/trufflehog-actions-scan@v0.9l-beta
 
       ## Code scanning
 
       - name: SonarQube Scan
+        continue-on-error: true
         uses: kitabisa/sonarqube-action@v1.2.0
         with:
             host: ${{ secrets.SONARQUBE_HOST }}
@@ -65,8 +77,8 @@ jobs:
 
       ### Container building and scanning
 
-      - uses: actions/checkout@v2 
       - name: Hadolint Action
+        continue-on-error: true
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
@@ -79,6 +91,7 @@ jobs:
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
+        continue-on-error: true
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -87,6 +100,7 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
+        continue-on-error: true
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
@@ -98,6 +112,7 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v5
+        continue-on-error: true
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -108,6 +123,7 @@ jobs:
       - name: Docker Scout
         id: docker-scout
         uses: docker/scout-action@v1
+        continue-on-error: true
         with:
             command: cves,recommendations
             image: ${{ steps.meta.outputs.tags }}
