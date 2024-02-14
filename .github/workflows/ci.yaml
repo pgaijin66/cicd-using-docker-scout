@@ -62,7 +62,7 @@ jobs:
 
       ## Detect secrets in code
 
-      - name: detect secrets
+      - name: Detect secrets
         continue-on-error: true
         uses: edplato/trufflehog-actions-scan@v0.9l-beta
 
