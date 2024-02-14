@@ -43,4 +43,5 @@ jobs:
         id: docker-scout
         uses: docker/scout-action@v1
         with:
+            context: .
             command: cves,recommendations
